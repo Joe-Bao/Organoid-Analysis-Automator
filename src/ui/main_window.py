@@ -1,3 +1,7 @@
+import customtkinter
+# Disable automatic DPI awareness to prevent 
+# "Can't find filter element" errors during Windows API initialization.
+customtkinter.deactivate_automatic_dpi_awareness() 
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 import threading
@@ -5,10 +9,7 @@ import os
 import time
 import sys
 
-try:
-    from src.core.automation import PipelineManager
-except ImportError:
-    print("Warning: Could not import PipelineManager. Ensure you are running from the project root.")
+
 
 # --- 全局外观设置 ---
 ctk.set_appearance_mode("System")  # 模式: "System" (跟随系统)
