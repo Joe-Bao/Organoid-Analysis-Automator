@@ -1,0 +1,22 @@
+# Python junk files
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# Ignore all content under the GelNest directory, except for .gitkeep
+# This preserves the folder structure while ignoring .exe files and large datasets
+GelNestOrganoidV3/*
+!GelNestOrganoidV3/.gitkeep
+
+# Ignore runtime input and output folders
+img/
+outputs/
+processed_csvs/
+*.csv
+*.xlsx
+
+# Ignore build artifacts (packaging outputs)
+build/
+dist/
+*.spec
