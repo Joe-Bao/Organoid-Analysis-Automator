@@ -1,0 +1,7 @@
+customtkinter
+pandas
+numpy
+openpyxl
+pywinauto
+packaging
+Pillow
