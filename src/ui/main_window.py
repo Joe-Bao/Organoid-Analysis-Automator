@@ -3,7 +3,6 @@ import customtkinter
 # "Can't find filter element" errors during Windows API initialization.
 customtkinter.deactivate_automatic_dpi_awareness() 
 import customtkinter as ctk
-from src.core.automation import PipelineManager
 from tkinter import filedialog, messagebox
 import threading
 import os
@@ -207,25 +206,36 @@ class BioQuantApp(ctk.CTk):
             print(f"Log Error: {e}")
 
     def start_pipeline_thread(self):
-        # 1. 验证输入
         src = self.entry_src.get()
-        if not src or not os.path.exists(src):
-            messagebox.showerror("Input Error", "Please select a valid source directory.")
-            return
+        if not src: return
         
+        # Get threshold value
         try:
             thresh = float(self.entry_thresh.get() or 0)
-        except ValueError:
-            messagebox.showerror("Input Error", "Threshold must be a number.")
+        except:
             return
 
-        # 2. 锁定 UI
-        self.btn_run.configure(state="disabled", text="⏳ PIPELINE RUNNING...")
-        self.progress_bar.configure(mode="indeterminate")
-        self.progress_bar.start()
+        self.btn_run.configure(state="disabled", text="INITIALIZING...")
         
-        # 3. 启动线程
-        threading.Thread(target=self._run_pipeline_wrapper, args=(src, thresh), daemon=True).start()
+        def run():
+            try:
+                # CRITICAL FIX: Lazy Import Strategy
+                # We MUST import PipelineManager (and pywinauto) here, inside the thread,
+                # rather than at the top level of the file.
+                #
+                # Reason: Top-level import triggers pywinauto's UIA/COM initialization immediately.
+                # This creates a conflict with Tkinter's main loop and file dialogs, causing
+                # the application to freeze (deadlock) when the "Browse" button is clicked.
+                from src.core.automation import PipelineManager
+                
+                manager = PipelineManager(self.project_root, self.log_message)
+                manager.run(src, thresh)
+            except Exception as e:
+                self.log_message(f"Critical Startup Error: {e}")
+            finally:
+                self.btn_run.configure(state="normal", text="START PIPELINE")
+
+        threading.Thread(target=run, daemon=True).start()
 
     def _run_pipeline_wrapper(self, src, thresh):
         """
