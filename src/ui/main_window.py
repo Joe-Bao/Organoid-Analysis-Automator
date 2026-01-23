@@ -1,7 +1,3 @@
-import customtkinter
-# Disable automatic DPI awareness to prevent 
-# "Can't find filter element" errors during Windows API initialization.
-customtkinter.deactivate_automatic_dpi_awareness() 
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 import threading
