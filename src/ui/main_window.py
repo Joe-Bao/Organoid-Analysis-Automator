@@ -17,9 +17,13 @@ class BioQuantApp(ctk.CTk):
         self.title("ORGANOID Automator v0.1 - Development Edition")
         self.geometry("1000x650")
         
-        # 动态获取项目根目录
-        self.project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-        
+        if getattr(sys, 'frozen', False):
+            # in release env
+            self.project_root = os.path.dirname(sys.executable)
+        else:
+            # In dev env
+            self.project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
@@ -31,7 +35,7 @@ class BioQuantApp(ctk.CTk):
         self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
 
-        self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="BioQuant\nAutomator", font=ctk.CTkFont(size=24, weight="bold"))
+        self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="ORGANOID \nAutomator", font=ctk.CTkFont(size=24, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(30, 20))
 
         self.btn_dashboard = ctk.CTkButton(self.sidebar_frame, text=" Dashboard", command=lambda: self.tabview.set("Dashboard"), height=40, anchor="w", font=ctk.CTkFont(size=14))
@@ -40,7 +44,7 @@ class BioQuantApp(ctk.CTk):
         self.btn_settings = ctk.CTkButton(self.sidebar_frame, text=" Settings", command=lambda: self.tabview.set("Settings"), height=40, anchor="w", font=ctk.CTkFont(size=14), fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.btn_settings.grid(row=2, column=0, padx=20, pady=10)
 
-        self.version_label = ctk.CTkLabel(self.sidebar_frame, text="v1.0.0 Dev\nMIT License", text_color="gray", font=ctk.CTkFont(size=10))
+        self.version_label = ctk.CTkLabel(self.sidebar_frame, text="v0.1 Dev\nMIT License", text_color="gray", font=ctk.CTkFont(size=10))
         self.version_label.grid(row=5, column=0, padx=20, pady=20)
 
     def _setup_main_area(self):
