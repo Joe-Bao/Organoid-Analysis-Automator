@@ -72,68 +72,101 @@ class PipelineManager:
             dlg.set_focus()
             time.sleep(1)
             
-            rect = dlg.rectangle()
-            w, h = rect.width(), rect.height()
+            # --- 步骤 0: 重置焦点 (点击左上角安全区) ---
+            # 这一步是为了确保 Tab 计数是从“零”开始的
+            self.log("⌨️ Focusing window...")
+            dlg.click_input(coords=(20, 20)) # 点击左上角空白处，确保没有选中任何框
+            time.sleep(0.5)
 
-            # 盲点坐标 (根据之前的经验)
-            self.log("👆 Auto-clicking: Disclaimer...")
-            dlg.click_input(coords=(int(w * 0.35), int(h * 0.22)))
+            # --- 步骤 1: 勾选免责声明 (Tab=2) ---
+            # 你的测试：空白 -> Tab x2 -> Agree
+            self.log("👆 Key-Nav: Toggling Disclaimer...")
+            # 连续按 2 次 Tab，然后按空格键 (Space) 勾选
+            dlg.type_keys("{TAB 2}{SPACE}")
+            time.sleep(0.5)
+
+            # --- 步骤 2: 设置 Confidence (Tab=6) ---
+            # 你的测试：空白 -> Tab x6 -> Confidence
+            # 相对计算：当前我们在 Agree (2)，还需要按 4 次 Tab 到达 Confidence (2+4=6)
+            self.log("⚙️ Key-Nav: Setting Confidence to 0.82...")
+            dlg.type_keys("{TAB 4}") 
+            time.sleep(0.2)
+            
+            # 输入数值 (保险起见：全选 -> 删除 -> 输入)
+            dlg.type_keys("^a{DELETE}0.82")
+            time.sleep(0.5)
+
+            # --- 步骤 3: 点击开始 (Tab=9) ---
+            # 你的测试：空白 -> Tab x9 -> Start
+            # 相对计算：当前我们在 Confidence (6)，还需要按 3 次 Tab 到达 Start (6+3=9)
+            self.log("🚀 Key-Nav: Triggering Start...")
+            dlg.type_keys("{TAB 3}")
             time.sleep(0.5)
             
-            self.log("👆 Auto-clicking: Start Processing...")
-            dlg.click_input(coords=(int(w * 0.5), int(h * 0.82)))
-            self.log("✅ Automation sequence finished. Watching for data...")
+            # 按回车键 (Enter) 触发按钮
+            dlg.type_keys("{ENTER}")
+            
+            self.log("✅ Automation sequence finished via Keyboard.")
         except Exception as e:
             self.log(f"⚠️ GUI Automation failed: {e}")
-            self.log("👉 Please manually click 'Start' in the external window.")
+            self.log("👉 Please manually set Confidence to 0.82 and Click Start.")
 
     def _monitor_results(self, total_expected, threshold, process):
         import pandas as pd 
         processed_files = set()
         
+        # 增加超时机制，防止死循环
+        no_file_count = 0 
+        
         while len(processed_files) < total_expected:
+            # 检查进程是否存活
             if process.poll() is not None and len(processed_files) < total_expected:
-                self.log("⚠️ Process terminated early.")
+                self.log("⚠️ Engine closed unexpectedly.")
                 break
             
             if os.path.exists(self.output_dir):
                 files = [f for f in os.listdir(self.output_dir) if f.endswith(".xlsx") and "summaryall" not in f]
                 
+                new_files_found = False
                 for f in files:
                     if f not in processed_files:
-                        # 发现新文件 -> 调用 Calculation 模块
+                        new_files_found = True
                         full_path = os.path.join(self.output_dir, f)
                         
-                        # 重试读取机制
+                        # 调用计算层
                         success = False
                         result = {}
-                        for _ in range(5):
-                            try:
-                                result = StatsCalculator.process_excel(full_path, threshold)
-                                if result['success']:
-                                    success = True
-                                    break
-                            except:
-                                time.sleep(1)
+                        for _ in range(5): # 重试5次
+                            result = StatsCalculator.process_excel(full_path, threshold)
+                            if result['success']:
+                                success = True
+                                break
+                            time.sleep(1)
                         
                         if success:
-                            # 写入总表
                             self._append_to_summary(result)
-                            self.log(f"📊 Processed: {f} -> Avg: {result['avg_sqrt_area']:.2f}")
+                            self.log(f"📊 {f}: Count={result['count']}, AvgSqrt={result['avg_sqrt_area']:.2f}")
                         else:
-                            self.log(f"❌ Failed to parse {f}: {result.get('error')}")
+                            self.log(f"❌ Parse Error {f}: {result.get('error')}")
 
                         processed_files.add(f)
+                
+                # 如果这一轮没找到新文件，增加计数器，避免日志刷屏
+                if not new_files_found:
+                    no_file_count += 1
+                else:
+                    no_file_count = 0
+                    
             time.sleep(2)
         
-        self.log(f"🎉 Pipeline Complete. Report: {self.final_report}")
+        self.log(f"🎉 All tasks finished. Report generated: {self.final_report}")
 
     def _append_to_summary(self, result_dict):
         import pandas as pd
         df = pd.DataFrame([{
             'File': result_dict['filename'],
-            'Count': result_dict['count'],
-            'Avg_Sqrt_Area': result_dict['avg_sqrt_area']
+            'Adjusted_Count': result_dict['count'], # 改名体现这是修正后的计数
+            'Adjusted_Avg_Sqrt_Area': result_dict['avg_sqrt_area']
         }])
         header = not os.path.exists(self.final_report)
         df.to_csv(self.final_report, mode='a', index=False, header=header)
