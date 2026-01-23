@@ -3,6 +3,7 @@ import customtkinter
 # "Can't find filter element" errors during Windows API initialization.
 customtkinter.deactivate_automatic_dpi_awareness() 
 import customtkinter as ctk
+from src.core.automation import PipelineManager
 from tkinter import filedialog, messagebox
 import threading
 import os
