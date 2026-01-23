@@ -14,7 +14,7 @@ class ORGANOIDApp(ctk.CTk):
         super().__init__()
 
         # 1. 基础窗口配置
-        self.title("ORGANOID Automator v0.1 - Development Edition")
+        self.title("ORGANOID Automator v0.2 - Development Edition")
         self.geometry("1000x650")
         
         if getattr(sys, 'frozen', False):
@@ -44,7 +44,7 @@ class ORGANOIDApp(ctk.CTk):
         self.btn_settings = ctk.CTkButton(self.sidebar_frame, text=" Settings", command=lambda: self.tabview.set("Settings"), height=40, anchor="w", font=ctk.CTkFont(size=14), fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.btn_settings.grid(row=2, column=0, padx=20, pady=10)
 
-        self.version_label = ctk.CTkLabel(self.sidebar_frame, text="v0.1 Dev\nMIT License", text_color="gray", font=ctk.CTkFont(size=10))
+        self.version_label = ctk.CTkLabel(self.sidebar_frame, text="v0.2 Dev\nMIT License", text_color="gray", font=ctk.CTkFont(size=10))
         self.version_label.grid(row=5, column=0, padx=20, pady=20)
 
     def _setup_main_area(self):
