@@ -18,7 +18,7 @@ class PipelineManager:
         
         self.img_dir = os.path.join(self.exe_dir, "img")
         self.output_dir = os.path.join(self.exe_dir, "outputs")
-        self.final_report = os.path.join(self.project_root, "BioQuant_Final_Report.csv")
+        self.final_report = os.path.join(self.project_root, "ORGANOID_Final_Report.csv")
 
     def run(self, source_folder, threshold):
         """流水线主入口"""

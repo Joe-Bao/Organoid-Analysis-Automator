@@ -9,7 +9,7 @@ import sys
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("dark-blue") 
 
-class BioQuantApp(ctk.CTk):
+class ORGANOIDApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
@@ -182,5 +182,5 @@ class BioQuantApp(ctk.CTk):
         self.btn_run.configure(state="normal", text="🚀 INITIALIZE PIPELINE")
 
 if __name__ == "__main__":
-    app = BioQuantApp()
+    app = ORGANOIDApp()
     app.mainloop()

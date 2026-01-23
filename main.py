@@ -1,5 +1,5 @@
-from src.ui.main_window import BioQuantApp
+from src.ui.main_window import ORGANOIDApp
 
 if __name__ == "__main__":
-    app = BioQuantApp()
+    app = ORGANOIDApp()
     app.mainloop()
