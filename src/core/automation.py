@@ -20,7 +20,7 @@ class PipelineManager:
         self.output_dir = os.path.join(self.exe_dir, "outputs")
         self.final_report = os.path.join(self.project_root, "ORGANOID_Final_Report.csv")
 
-    def run(self, source_folder, threshold):
+    def run(self, source_folder, threshold , confidence=0.82):
         """流水线主入口"""
         if not os.path.exists(self.exe_path):
             self.log(f"❌ Error: Executable not found at {self.exe_path}")
@@ -49,7 +49,7 @@ class PipelineManager:
             process = subprocess.Popen(self.exe_path, cwd=self.exe_dir)
             
             # 4. 自动化点击
-            self._automate_gui()
+            self._automate_gui(confidence)
 
             # 5. 监控与计算
             self._monitor_results(len(images), threshold, process)
@@ -63,7 +63,7 @@ class PipelineManager:
         os.makedirs(self.img_dir)
         os.makedirs(self.output_dir)
 
-    def _automate_gui(self):
+    def _automate_gui(self, confidence):
         self.log("🤖 Waiting for GUI...")
         try:
             app = Application(backend="uia").connect(path=self.exe_path, timeout=20)
@@ -93,7 +93,7 @@ class PipelineManager:
             time.sleep(0.2)
             
             # 输入数值 (保险起见：全选 -> 删除 -> 输入)
-            dlg.type_keys("^a{DELETE}0.82")
+            dlg.type_keys(f"^a{{DELETE}}{confidence}")
             time.sleep(0.5)
 
             # --- 步骤 3: 点击开始 (Tab=9) ---

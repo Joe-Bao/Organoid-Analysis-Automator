@@ -14,7 +14,7 @@ class ORGANOIDApp(ctk.CTk):
         super().__init__()
 
         # 1. 基础窗口配置
-        self.title("ORGANOID Automator v0.2 - Development Edition")
+        self.title("ORGANOID Automator v0.3 - Development Edition")
         self.geometry("1000x650")
         
         if getattr(sys, 'frozen', False):
@@ -44,7 +44,7 @@ class ORGANOIDApp(ctk.CTk):
         self.btn_settings = ctk.CTkButton(self.sidebar_frame, text=" Settings", command=lambda: self.tabview.set("Settings"), height=40, anchor="w", font=ctk.CTkFont(size=14), fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.btn_settings.grid(row=2, column=0, padx=20, pady=10)
 
-        self.version_label = ctk.CTkLabel(self.sidebar_frame, text="v0.2 Dev\nMIT License", text_color="gray", font=ctk.CTkFont(size=10))
+        self.version_label = ctk.CTkLabel(self.sidebar_frame, text="v0.3 Dev\nMIT License", text_color="gray", font=ctk.CTkFont(size=10))
         self.version_label.grid(row=5, column=0, padx=20, pady=20)
 
     def _setup_main_area(self):
@@ -76,6 +76,12 @@ class ORGANOIDApp(ctk.CTk):
         self.entry_thresh = ctk.CTkEntry(self.frame_params, width=120, justify="center")
         self.entry_thresh.insert(0, "0.0")
         self.entry_thresh.pack(side="left", padx=10)
+
+        self.lbl_conf = ctk.CTkLabel(self.frame_params, text="Confidence:", font=ctk.CTkFont(size=14, weight="bold"))
+        self.lbl_conf.pack(side="left", padx=(25, 5), pady=20) # 稍微加点左边距与前一个分开
+        self.entry_conf = ctk.CTkEntry(self.frame_params, width=80, justify="center")
+        self.entry_conf.insert(0, "0.82") # 默认值 0.82
+        self.entry_conf.pack(side="left", padx=5)
 
         # 3. 启动按钮
         self.btn_run = ctk.CTkButton(self.tab_dashboard, text="🚀 INITIALIZE PIPELINE", font=ctk.CTkFont(size=16, weight="bold"), height=50, fg_color="#2CC985", hover_color="#229A65", command=self.start_pipeline_thread)
@@ -137,15 +143,20 @@ class ORGANOIDApp(ctk.CTk):
             messagebox.showerror("Format Error", "Threshold must be a number.")
             return
 
+        try:
+            conf = float(self.entry_conf.get())
+        except ValueError:
+            messagebox.showerror("Format Error", "Confidence must be a number.")
+            return
         # 锁定 UI
         self.btn_run.configure(state="disabled", text="INITIALIZING...")
         self.progress_bar.configure(mode="indeterminate")
         self.progress_bar.start()
 
         # 启动线程，目标指向 _run_pipeline_wrapper
-        threading.Thread(target=self._run_pipeline_wrapper, args=(src, thresh), daemon=True).start()
+        threading.Thread(target=self._run_pipeline_wrapper, args=(src, thresh, conf), daemon=True).start()
 
-    def _run_pipeline_wrapper(self, src, thresh):
+    def _run_pipeline_wrapper(self, src, thresh,conf=0.82):
         """
         子线程：负责导入 heavy 模块并运行业务逻辑
         """
@@ -161,7 +172,7 @@ class ORGANOIDApp(ctk.CTk):
             
             # 实例化并运行
             manager = PipelineManager(self.project_root, self.log_message)
-            manager.run(src, thresh)
+            manager.run(src, thresh, conf)
             
             self.log_message("✅ Task Finished.")
 
